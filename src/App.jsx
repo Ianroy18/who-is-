@@ -1,44 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CATEGORIES } from './data';
 import { GiHolyGrail, GiAngelWings, GiSnake, GiCrossMark, GiCastle } from 'react-icons/gi';
-
-const CATEGORIES = {
-    "People": [
-        "Adam", "Eve", "Noah", "Abraham", "Sarah", "Isaac", "Jacob", "Joseph", "Moses", "Aaron",
-        "Joshua", "Ruth", "Samuel", "David", "Solomon", "Elijah", "Elisha", "Esther", "Job", "Isaiah",
-        "Jeremiah", "Daniel", "Jonah", "Mary", "Joseph", "Peter", "Paul", "John", "Judas", "Luke"
-    ],
-    "Places": [
-        "Eden", "Bethlehem", "Nazareth", "Jerusalem", "Galilee", "Jordan River", "Red Sea", "Sinai",
-        "Jericho", "Babylon", "Egypt", "Canaan", "Gethsemane", "Golgotha", "Nineveh", "Damascus",
-        "Antioch", "Corinth", "Ephesus", "Rome", "Mount Ararat", "Sodom", "Gomorrah", "Capernaum"
-    ],
-    "Events": [
-        "Creation", "The Flood", "Tower of Babel", "Exodus", "Passover", "Ten Commandments",
-        "Fall of Jericho", "David vs Goliath", "Burning Bush", "Parting Red Sea", "Virgin Birth",
-        "Baptism of Jesus", "Wedding at Cana", "Last Supper", "Crucifixion", "Resurrection",
-        "Ascension", "Pentecost", "Paul's Conversion", "Road to Damascus", "Denial of Peter", "Betrayal"
-    ],
-    "Objects": [
-        "Ark", "Ark of the Covenant", "Manna", "Ten Commandments Tablets", "Bronze Serpent",
-        "Goliath's Sword", "Slingshot", "Crown of Thorns", "Cross", "Empty Tomb", "Thirty Pieces of Silver",
-        "Seamless Robe", "Fish and Loaves", "Mustard Seed", "Fig Tree", "Burning Bush", "Golden Calf",
-        "Scepter", "Lamb", "Dove", "Scroll", "Trumpet"
-    ],
-    "Miracles": [
-        "Parting Red Sea", "Water from Rock", "Manna from Heaven", "Sun Stands Still", "Healing Leper",
-        "Blind See", "Lame Walk", "Water to Wine", "Feeding 5000", "Walking on Water", "Calming Storm",
-        "Raising Lazarus", "Resurrection", "Coin in Fish", "Withered Fig Tree", "Deaf Hear", "Mute Speak",
-        "Casting out Demons", "Shadow Healing", "Handkerchief Healing", "Paul's Viper Bite"
-    ]
-};
+import { FaBookOpen } from 'react-icons/fa';
 
 const CATEGORY_ICONS = {
     "People": GiAngelWings,
     "Places": GiCastle,
     "Events": GiHolyGrail,
     "Objects": GiCrossMark,
-    "Miracles": GiSnake
+    "Miracles": GiSnake,
+    "Bible Books": FaBookOpen
 };
 
 const COLORS = {
@@ -53,6 +25,7 @@ const COLORS = {
 };
 
 function App() {
+    const [howToLang, setHowToLang] = useState('en');
     const [gameState, setGameState] = useState('setup');
     const [players, setPlayers] = useState(['', '', '']);
     const [category, setCategory] = useState('');
@@ -64,7 +37,6 @@ function App() {
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const timerRef = useRef(null);
 
-    // Timer logic
     useEffect(() => {
         if (isTimerRunning && timeLeft > 0) {
             timerRef.current = setTimeout(() => setTimeLeft(t => t - 1), 1000);
@@ -92,12 +64,16 @@ function App() {
         const validPlayers = players.filter(p => p.trim() !== '');
         if (validPlayers.length < 3) return;
 
-        const wordList = CATEGORIES[category];
-        const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+        const categoriesList = Object.keys(CATEGORIES);
+        const randomCategory = categoriesList[Math.floor(Math.random() * categoriesList.length)];
+
+        const wordList = CATEGORIES[randomCategory];
+        const randomItem = wordList[Math.floor(Math.random() * wordList.length)];
         const randomImposter = Math.floor(Math.random() * validPlayers.length);
 
         setPlayers(validPlayers);
-        setSecretWord(randomWord);
+        setCategory(randomCategory);
+        setSecretWord(randomItem);
         setImposterIndex(randomImposter);
         setRevealIndex(0);
         setHasRevealed(false);
@@ -144,20 +120,103 @@ function App() {
                             exit={{ opacity: 0, y: -20 }}
                             className={`${COLORS.card} backdrop-blur-md rounded-2xl p-6 border ${COLORS.border} ${COLORS.neonGlow}`}
                         >
+                            <div className="flex justify-center mb-6 mt-2">
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                                    className="relative"
+                                >
+                                    <div className={`absolute inset-0 bg-purple-500/20 blur-xl rounded-full`}></div>
+                                    <img src="/favicon.svg" alt="Imposter Logo" className="w-24 h-24 relative z-10 drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]" />
+                                </motion.div>
+                            </div>
                             <h1 className={`text-4xl font-bold text-center mb-2 ${COLORS.neonPurple}`}>
                                 Imposter Who?
                             </h1>
                             <p className="text-center text-gray-400 mb-8 text-sm">
-                                A biblical social deduction game
+                                Discern the truth in a world of whispers.
                             </p>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => setGameState('addPlayers')}
+                                    className={`w-full py-4 rounded-xl font-semibold ${COLORS.button} transition-all duration-200 ${COLORS.neonGlow}`}
+                                >
+                                    Start New Game
+                                </button>
+                                <button
+                                    onClick={() => setGameState('howToPlay')}
+                                    className="w-full py-3 rounded-xl font-medium bg-gray-800 hover:bg-gray-700 transition-all border border-gray-700 text-gray-300"
+                                >
+                                    How to Play
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {gameState === 'howToPlay' && (
+                        <motion.div
+                            key="howToPlay"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className={`${COLORS.card} backdrop-blur-md rounded-2xl p-6 border ${COLORS.border}`}
+                        >
+                            <h2 className="text-2xl font-bold mb-4 text-center">How to Play</h2>
+
+                            <div className="flex justify-center gap-2 mb-4">
+                                <button onClick={() => setHowToLang('en')} className={`px-4 py-1 text-xs font-semibold rounded-full transition-all ${howToLang === 'en' ? COLORS.button : 'bg-gray-800 text-gray-400'}`}>English</button>
+                                <button onClick={() => setHowToLang('tl')} className={`px-4 py-1 text-xs font-semibold rounded-full transition-all ${howToLang === 'tl' ? COLORS.button : 'bg-gray-800 text-gray-400'}`}>Tagalog</button>
+                                <button onClick={() => setHowToLang('ceb')} className={`px-4 py-1 text-xs font-semibold rounded-full transition-all ${howToLang === 'ceb' ? COLORS.button : 'bg-gray-800 text-gray-400'}`}>Bisaya</button>
+                            </div>
+
+                            <div className="space-y-4 text-sm text-gray-300 max-h-72 overflow-y-auto pr-2">
+                                {howToLang === 'en' && <>
+                                    <p className="font-semibold text-purple-400">Who's the imposter among your friends?</p>
+                                    <p>Imposter is the ultimate party game of bluffing, guessing, and social deduction. Grab 3-15 friends, sit around one device, and find out who’s lying.</p>
+                                    <div className="mt-2 text-gray-200">
+                                        <p><strong>1-</strong> All players see the same secret word—except one.</p>
+                                        <p><strong>2-</strong> The imposter only receives a vague hint.</p>
+                                        <p><strong>3-</strong> One by one, players say a word related to the secret word.</p>
+                                        <p><strong>4-</strong> The imposter must fake it and try to blend in without knowing the word.</p>
+                                        <p><strong>5-</strong> Keep giving words and talking until someone thinks they've figured it out.</p>
+                                    </div>
+                                    <p className="mt-2 italic text-purple-300">Fun, fast, and full of suspicion—perfect for game nights, road trips, or hanging out with friends.</p>
+                                </>}
+                                {howToLang === 'tl' && <>
+                                    <p className="font-semibold text-purple-400">Sino ang imposter sa magkakaibigan?</p>
+                                    <p>Ang Imposter ay isang party game ng pag-bluff, panghuhula, at social deduction. Mag-aya ng 3-15 na kaibigan, umupo paikot sa isang device, at alamin kung sino ang nagsisinungaling.</p>
+                                    <div className="mt-2 text-gray-200">
+                                        <p><strong>1-</strong> Lahat ng manlalaro ay makikita ang iisang sikretong salita—maliban sa isa.</p>
+                                        <p><strong>2-</strong> Ang imposter ay makakatanggap lamang ng maliit na hint.</p>
+                                        <p><strong>3-</strong> Isa-isa, ang mga manlalaro ay magsasabi ng isang salita na konektado sa sikretong salita.</p>
+                                        <p><strong>4-</strong> Kailangang magpanggap ng imposter at sumabay nang hindi alam ang totoong salita.</p>
+                                        <p><strong>5-</strong> Ipagpatuloy ang pagbibigay ng salita at pag-uusap hanggang sa may makahula kung sino siya.</p>
+                                    </div>
+                                    <p className="mt-2 italic text-purple-300">Masaya, mabilis, at puno ng suspetsa—perpekto para sa game nights, road trips, o tambay kasama ang barkada.</p>
+                                </>}
+                                {howToLang === 'ceb' && <>
+                                    <p className="font-semibold text-purple-400">Kinsa ang imposter sa inyong barkada?</p>
+                                    <p>Ang Imposter kay ang ultimate party game sa binotbotay, tag-anay, ug social deduction. Pag-uban og 3-15 ka barkada, lingkod palibot sa isa ka device, ug hibal-a kung kinsa ang namakak.</p>
+                                    <div className="mt-2 text-gray-200">
+                                        <p><strong>1-</strong> Tanan players makakita sa same na sekreto na word—lahi lang sa isa.</p>
+                                        <p><strong>2-</strong> Ang imposter kay makadawat ra og gamay na hint.</p>
+                                        <p><strong>3-</strong> Puli-puli, ang mga players kay mosulti og usa ka word na related sa sekreto na word.</p>
+                                        <p><strong>4-</strong> Ang imposter kay kailangan mag-patoo-too ug mosabay bisan wala siya kabalo sa saktong word.</p>
+                                        <p><strong>5-</strong> Padayon sa paghatag og words ug pag-estorya hantod sa naay maka-tag-an kung kinsa siya.</p>
+                                    </div>
+                                    <p className="mt-2 italic text-purple-300">Lingaw, paspas, ug puno sa pagduda—perpekto para sa game nights, road trips, o pag-tambay uban sa barkada.</p>
+                                </>}
+                            </div>
                             <button
-                                onClick={() => setGameState('category')}
-                                className={`w-full py-4 rounded-xl font-semibold ${COLORS.button} transition-all duration-200 ${COLORS.neonGlow}`}
+                                onClick={() => setGameState('setup')}
+                                className="w-full py-3 mt-6 rounded-xl font-medium bg-gray-800 hover:bg-gray-700 transition-all border border-gray-700 text-gray-300"
                             >
-                                Start New Game
+                                Back to Home
                             </button>
                         </motion.div>
                     )}
+
 
                     {gameState === 'category' && (
                         <motion.div
@@ -318,15 +377,15 @@ function App() {
                                                     <p className="text-xs text-gray-400 mt-4">Blend in. Don't get caught.</p>
                                                     <div className="mt-4 p-3 bg-red-900/40 rounded-lg border border-red-500/30 inline-block">
                                                         <p className="text-sm font-medium text-red-300">
-                                                            <span className="font-bold">Hint:</span> The word is in the <span className="text-red-200 uppercase">{category}</span> category.
+                                                            <span className="font-bold">Hint:</span> {secretWord.h}
                                                         </p>
                                                     </div>
                                                 </>
                                             ) : (
                                                 <>
                                                     <p className="text-sm mb-2 text-gray-400">The secret word is</p>
-                                                    <p className={`text-4xl font-bold ${COLORS.neonPurple}`}>{secretWord}</p>
-                                                    <p className="text-xs text-gray-400 mt-4">Category: {category}</p>
+                                                    <p className={`text-4xl font-bold ${COLORS.neonPurple}`}>{secretWord.w}</p>
+
                                                 </>
                                             )}
                                         </div>
@@ -355,7 +414,7 @@ function App() {
                                 <div className={`text-5xl font-mono font-bold ${timeLeft < 60 ? COLORS.neonRed : COLORS.neonPurple}`}>
                                     {formatTime(timeLeft)}
                                 </div>
-                                <p className="text-xs text-gray-400 mt-2">Category: {category}</p>
+
                             </div>
 
                             <div className="mb-6">
@@ -406,18 +465,36 @@ function App() {
 
                             <div className="text-center mb-8 p-4 rounded-xl bg-purple-950/30 border border-purple-500">
                                 <p className="text-sm text-gray-400 mb-1">The Secret Word</p>
-                                <p className={`text-2xl font-bold ${COLORS.neonPurple}`}>{secretWord}</p>
+                                <p className={`text-2xl font-bold ${COLORS.neonPurple}`}>{secretWord.w}</p>
+                                {secretWord.k && (
+                                    <div className="mt-4 pt-4 border-t border-purple-500/30">
+                                        <p className="text-xs text-purple-300 font-semibold mb-1 uppercase tracking-widest">Did you know?</p>
+                                        <p className="text-sm text-gray-300 leading-relaxed italic">"{secretWord.k}"</p>
+                                    </div>
+                                )}
                             </div>
 
-                            <button
-                                onClick={resetGame}
-                                className={`w-full py-4 rounded-xl font-semibold ${COLORS.button} ${COLORS.neonGlow}`}
-                            >
-                                Play Again
-                            </button>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => startGame()}
+                                    className={`w-full py-4 rounded-xl font-semibold ${COLORS.button} ${COLORS.neonGlow}`}
+                                >
+                                    Play Again.
+                                </button>
+                                <button
+                                    onClick={() => setGameState('setup')}
+                                    className={`w-full py-3 rounded-xl font-medium bg-gray-800 hover:bg-gray-700 transition-all border border-gray-700 text-gray-300`}
+                                >
+                                    Quit the Game
+                                </button>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                <div className="text-center mt-12 text-gray-500 text-xs tracking-wider uppercase font-semibold">
+                    <span className="text-purple-500/50">Created by Kuya Ianroy</span>
+                </div>
             </div>
         </div>
     );
